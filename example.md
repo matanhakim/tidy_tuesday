@@ -1,26 +1,10 @@
----
-title: "First Quarto on GitHub"
-format:
-  html:
-    theme: default
-    toc: true
-    number-sections: true
-    keep-md: true
----
-
-
+First Quarto on GitHub
+================
 
 My first markdown line on GitHub
 
-::: {.cell}
-
-```{.r .cell-code}
+``` r
 mean(1:9)
 ```
 
-::: {.cell-output .cell-output-stdout}
-```
-[1] 5
-```
-:::
-:::
+    [1] 5
