@@ -8,7 +8,9 @@ format:
     keep-md: true
 ---
 
+My first markdown line on GitHub
 ```{r}
-
+#| eval: true
+mean(1:9)
 ```
 
