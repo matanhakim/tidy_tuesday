@@ -5,6 +5,7 @@ format:
     theme: default
     toc: true
     number-sections: true
+    keep-md: true
 ---
 
 ```{r}
