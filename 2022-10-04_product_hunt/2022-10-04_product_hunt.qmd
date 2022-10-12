@@ -1,0 +1,61 @@
+---
+title: "TidyTuesday 2022-10-04"
+format: gfm
+---
+# Load Libraries
+
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(lubridate)
+```
+
+# Load Data
+```{r}
+data <- tt_load("2022-10-04")
+df <- data %>% pluck(1)
+```
+
+# Explore
+## Realease date distribution
+```{r}
+df %>% 
+  ggplot(aes(release_date)) +
+  geom_histogram()
+```
+## Realease date and upvotes
+```{r}
+df %>% 
+  mutate(release_date = floor_date(release_date, unit = "month")) %>% 
+  group_by(release_date) %>% 
+  summarise(upvotes = sum(upvotes)) %>% 
+  ggplot(aes(release_date, upvotes)) +
+  geom_line()
+```
+## Average upvote per product by release date
+```{r}
+df %>% 
+  mutate(release_date = floor_date(release_date, unit = "month")) %>% 
+  group_by(release_date) %>% 
+  summarise(avg_upvotes = mean(upvotes)) %>% 
+  ggplot(aes(release_date, avg_upvotes)) +
+  geom_line()
+```
+## Create categories data frame
+```{r}
+df_categories <- df %>% 
+  separate_rows(category_tags, sep = "', '") %>% 
+  mutate(category_tags = str_remove_all(category_tags, pattern = "['\\[\\]]"))
+```
+
+```{r}
+df_categories %>% 
+  count(category_tags = fct_lump(category_tags, 20)) %>% 
+  mutate(category_tags = fct_reorder(str_to_title(category_tags), n)) %>% 
+  filter(category_tags != "Other") %>% 
+  ggplot(aes(category_tags, n)) +
+  geom_col() +
+  coord_flip()
+```
+
+
