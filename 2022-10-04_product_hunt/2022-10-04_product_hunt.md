@@ -19,6 +19,9 @@ TidyTuesday 2022-10-04
     id="toc-most-frequent-categories-by-date">Most frequent categories by
     date</a>
 - <a href="#visualize" id="toc-visualize">Visualize</a>
+- <a href="#save-plot" id="toc-save-plot">Save plot</a>
+- <a href="#twitter-post-arguments"
+  id="toc-twitter-post-arguments">Twitter post arguments</a>
 
 # Load Libraries
 
@@ -167,7 +170,7 @@ cat_plot <- df_categories %>%
   mutate(category_freq = n / sum(n)) %>% 
   ungroup() %>% 
   ggplot(aes(release_date, category_freq)) +
-  geom_line() +
+  geom_line(size = 0.3) +
   facet_wrap(~ category_tags, scales = "free_y")
 
 cat_plot
@@ -182,7 +185,7 @@ cat_plot +
   scale_y_continuous(labels = label_percent(accuracy = 1)) +
   scale_x_date(breaks = ymd(c("2014-01-01", "2018-01-01", "2022-01-01")), date_labels = "%Y") +
   labs(
-    title = "Frequency of tech product categories over time, 2014-2021",
+    title = "Frequency of open source product categories over time, 2014-2021",
     subtitle = "Some categories demonstarte a steady trend while others have distinct peaks",
     caption = "\n Created as part of the #TidyTuesday project from the R4DS community. \n data from https://github.com/rfordatascience/tidytuesday/tree/master/data/2022/2022-10-04"
   ) +
@@ -196,3 +199,25 @@ cat_plot +
 ```
 
 ![](2022-10-04_product_hunt_files/figure-gfm/unnamed-chunk-9-1.png)
+
+# Save plot
+
+``` r
+ggsave("2022-10-04.png", height = 5)
+```
+
+    Saving 7 x 5 in image
+
+# Twitter post arguments
+
+``` r
+status <- "This is my first #TidyTuesday plot! I'd be happy for any feedback. Obviously, this is last week's data, but I hope to hear some people from the community. This was tweeted through {rtweet}. #rstats #r4ds"
+media <- "2022-10-04.png"
+alt_text <- "A faceted line chart. Frequency of open source product categories over time, 2014-2021. the x-axis of each facet is limited by the years 2014-2022, and the y-axis represents frequency percents of each category which differ between facets."
+
+#post_tweet(
+#  status = status,
+#  media = media,
+#  media_alt_text = alt_text
+#)
+```
