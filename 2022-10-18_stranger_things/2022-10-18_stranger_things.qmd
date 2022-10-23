@@ -1,0 +1,136 @@
+---
+title: "TidyTuesday 2022-10-18"
+format: gfm
+fig-height: 3
+code-fold: true
+toc: true
+---
+
+# Load Libraries
+
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(stopwords)
+library(sentimentr)
+library(ggrepel)
+library(wordcloud2)
+```
+
+# Load Data
+
+```{r}
+data <- tt_load("2022-10-18")
+dialogue <- data %>% pluck(2)
+```
+
+# Explore
+
+## Profanity Words
+Pivot longer for a words data frame, drop NA's, check each word for profanity and clean each one for non-letter/number charachters.
+```{r}
+words <- dialogue %>% 
+  separate_rows(dialogue, sep = " ") %>% 
+  drop_na(dialogue) %>% 
+  mutate(
+    word = str_to_lower(dialogue),
+    is_profanity = word %in% lexicon::profanity_alvarez,
+    word = str_remove_all(word, "[^a-zA-Z0-9']")
+    ) %>% 
+  filter(word != "")
+```
+
+## Remove Stop Words
+```{r}
+stopwords <- tibble(
+  word = stopwords("en", simplify = TRUE)
+)
+
+words <- words %>% 
+  anti_join(stopwords, by = "word") %>% 
+  mutate(
+    is_profanity = case_when(
+      word == "hell" ~ FALSE,
+      is_profanity ~ TRUE,
+      TRUE ~ FALSE
+    )
+  )
+```
+
+## Create Summary profanity data
+
+```{r}
+prof_by_ep <- words %>% 
+  mutate(seep = str_c(season, episode, sep = "-")) %>% 
+  group_by(seep) %>% 
+  add_count(word, wt = is_profanity) %>% 
+  summarise(
+    prof_count = sum(is_profanity),
+    prof_freq = mean(is_profanity),
+    prof_common = word[which.max(n)]
+  ) %>% 
+  mutate(label = case_when(
+    prof_count >= 5 ~ prof_common,
+    TRUE ~ ""
+  ))
+```
+
+
+# Visualize
+
+```{r}
+prof_plot <- prof_by_ep %>% 
+  ggplot(aes(seep, prof_count)) + 
+  geom_col()
+
+prof_plot
+```
+```{r}
+prof_plot +
+  geom_text_repel(aes(label = label), color = "white", force = 0.001, vjust = 0.5) +
+  labs(
+    title = 'Number of Profanity Words in "Stranger Things" by Episode',
+    subtitle = "The most common profanity word in the most profane episodes is highlighted",
+    caption = "Source: 8flix.com/stranger-things, Plot: @MatanHakim"
+  ) +
+  xlab("Season-Episode") +
+  ylab("Profanity count") +
+  scale_x_discrete(breaks = prof_by_ep[["seep"]][seq(1, 33, 2)]) +
+  theme_dark(17) +
+  theme(legend.position = "none",
+        text = element_text(colour = "white", family="Arial Narrow"),
+        axis.text = element_text(colour = "white", family="Arial Narrow"),
+        axis.text.x = element_text(size = 8),
+        plot.title = element_text(size=15, face = "bold"),
+        plot.subtitle = element_text(size=12),
+        plot.caption = element_text(size = 8, hjust = 0),
+        plot.background = element_rect(fill = "grey10"),
+        panel.background = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major = element_line(color = "grey70", size = 0.2),
+        
+        plot.margin = unit(c(1,1,0.5,0.5), "cm")
+        )
+
+```
+# Save plot
+
+```{r}
+ggsave("2022-10-18.png", height = 5)
+```
+# Twitter post arguments
+
+```{r}
+status <- 'Another #TidyTuesday plot! I counted profanity words in each "Stranger Things" Episode using {lexicon::profanity_alvarez}. Theme is using code from @veerlevanson. Happy for any feedback. Tweeted through {rtweet}. #rstats #r4ds #tidyverse'
+media <- "2022-10-04.png"
+alt_text <- 'A bar chart. Number of Profanity Words in "Stranger Things" by Episode. The x-axis is episodes 1-9 in each 1-4 season, and the y-axis represents the number of profanity words in each facet. Common words in some episodes are presented, such as "shit" and ""screw".'
+
+#post_tweet(
+#  status = status,
+#  media = media,
+#  media_alt_text = alt_text
+#)
+```
+
