@@ -18,8 +18,9 @@ rev_films <- films %>%
     decade = year(release_date) - year(release_date) %% 10,
     decade = fct_reorder(as_factor(decade), release_date)
   ) %>% 
+  filter(budget != 0 & revenue != 0 & !is.na(revenue_pct)) 
 
-rev_vote_films <- rev_films %>% 
+  rev_vote_films <- rev_films %>% 
   filter(vote_average != 0 & vote_count != 0)
 
 # Visualize
