@@ -3,8 +3,6 @@
 library(tidyverse)
 library(tidytuesdayR)
 library(lubridate)
-library(colorfindr)
-library(httr)
 library(scales)
 
 # Load Data
@@ -20,14 +18,13 @@ rev_films <- films %>%
     decade = year(release_date) - year(release_date) %% 10,
     decade = fct_reorder(as_factor(decade), release_date)
   ) %>% 
-  filter(budget != 0 & revenue != 0 & !is.na(revenue_pct))
 
 rev_vote_films <- rev_films %>% 
   filter(vote_average != 0 & vote_count != 0)
 
 # Visualize
 
-rev_vote_films %>% 
+rev_films %>% 
   ggplot(aes(vote_count, revenue_pct)) + 
   geom_point() +
   geom_smooth(se = TRUE) + 
@@ -37,5 +34,6 @@ rev_vote_films %>%
   facet_wrap(~ decade) 
 
 # Save
+
 ggsave(path = "2022-11-01_horror_movies", filename = "2022-11-01_horror_movie.png", scale = 1.778)
 ggsave(path = "plots", filename = "2022-11-01_horror_movie.png", scale = 1.778)
